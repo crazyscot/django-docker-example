@@ -1,0 +1,22 @@
+upstream webapp {
+    # Django container host/port as set up in the docker-compose file
+    server web:8000;
+}
+
+# N.B. This is a minimal example config. A real config would set up access_log, error_page, etc.
+
+server {
+    listen       ${NGINX_PORT};
+    server_name  localhost;
+    location /static/ {
+        # There is a trick here: We are mounting the static directory into .../html/static/
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+    location / {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_redirect off;
+        proxy_pass http://webapp; # this refers to the upstream server defined above
+    }
+}
+
